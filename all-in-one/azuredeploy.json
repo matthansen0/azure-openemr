@@ -244,8 +244,8 @@
       }
     },
         {
+            "name": "linuxVM/docker/Compose/install",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "dockerCompose",
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "tags": {
