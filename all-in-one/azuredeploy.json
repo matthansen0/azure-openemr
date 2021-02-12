@@ -244,8 +244,8 @@
       }
     },
         {
-            "name": "customscript-dockerCompose",
             "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "customscript-dockerCompose",
             "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "tags": {
