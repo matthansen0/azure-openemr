@@ -7,14 +7,15 @@ sudo apt update
 
 sudo apt install docker -y
 sudo apt install docker-compose -y
+sudo systemctl enable docker
 
 # Download and run sample docker compose file
 wget https://raw.githubusercontent.com/matthansen0/azure-openemr/dev/all-in-one/docker-compose.yml
 docker-compose up -d
 
 # Checking Web Service Status
-while [ "$status" != 0 ]
+while [ "$?" != 0 ]
 do
-    status=$(timeout 2 bash -c "</dev/tcp/127.0.0.1/80"; echo $?)
+    timeout 2 bash -c "</dev/tcp/127.0.0.1/80"
     sleep 1
 done
