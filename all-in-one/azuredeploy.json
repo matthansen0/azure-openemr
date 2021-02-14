@@ -261,7 +261,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "https://raw.githubusercontent.com/matthansen0/azure-openemr/dev/all-in-one/install.sh"
+                        "https://raw.githubusercontent.com/matthansen0/azure-openemr/main/all-in-one/install.sh"
                     ]
                 },
                 "protectedSettings": {
