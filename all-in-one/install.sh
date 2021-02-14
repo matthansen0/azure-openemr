@@ -14,6 +14,7 @@ wget https://raw.githubusercontent.com/matthansen0/azure-openemr/dev/all-in-one/
 docker-compose up -d
 
 # Checking Web Service Status
+echo "Waiting for web services."
 until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:80); do
     printf '.'
     sleep 5
