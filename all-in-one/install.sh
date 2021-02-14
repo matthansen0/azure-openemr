@@ -7,6 +7,6 @@ sudo apt update
 sudo apt install docker -y
 sudo apt install docker-compose -y
 
-wget https://raw.githubusercontent.com/matthansen0/azure-openemr/main/all-in-one/docker-compose.yml
+wget https://raw.githubusercontent.com/matthansen0/azure-openemr/dev/all-in-one/docker-compose.yml
 
 docker-compose up
