@@ -9,4 +9,4 @@ sudo apt install docker-compose -y
 
 wget https://raw.githubusercontent.com/matthansen0/azure-openemr/dev/all-in-one/docker-compose.yml
 
-docker-compose up
+docker-compose up >> open-emr-docker-compose-status.log
