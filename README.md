@@ -1,5 +1,5 @@
 # OpenEMR on Azure
-This repository contains automation to deploy OpenEMR on Azure. 
+This repository contains automation to deploy [OpenEMR](https://www.open-emr.org/) on Azure. Great work being done on this project on the [OpenEMR Repo](https://github.com/openemr/openemr).
 
 ## All-in-one:
 ### OpenEMR+MySQL Containers with Docker Compose on an Azure IaaS Virtual Machine
