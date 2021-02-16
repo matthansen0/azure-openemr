@@ -10,7 +10,7 @@ This repository contains automation to deploy OpenEMR on Azure.
 
 This template allows you to deploy an Ubuntu Server 18.04-LTS VM with Docker
 and starts an OpenEMR container listening an port 80 which uses MySQL database running
-in a separate but linked Docker container, which are created using Docker Compose.
+in a separate but linked Docker container, which are created using Docker Compose. The shell script validates service functionality before finishing; the deployment typically takes about 10 minutes.
 
 This deployment will listen on HTTP/80 and HTTPS/443 (with a self-signed cert) by default and has a public IP resources associated with it, if this is for an internal deployment please [dissociate the public IP address](https://docs.microsoft.com/en-us/azure/virtual-network/remove-public-ip-address-vm) from the VM.
 
