@@ -11,7 +11,7 @@ sudo apt install docker-compose -y
 sudo systemctl enable docker
 
 # Download and run sample docker compose file
-wget https://raw.githubusercontent.com/matthansen0/azure-openemr/dev/all-in-one/docker-compose.yml
+wget https://raw.githubusercontent.com/matthansen0/azure-openemr/main/all-in-one/docker-compose.yml
 docker-compose up -d
 
 # Checking Web Service Status

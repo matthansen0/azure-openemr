@@ -157,6 +157,19 @@
               "destinationAddressPrefix": "*",
               "destinationPortRange": "80"
             }
+          },
+          {
+            "name": "HTTPS",
+            "properties": {
+              "priority": 1001,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "443"
+            }
           }
         ]
       }
@@ -261,7 +274,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "https://raw.githubusercontent.com/matthansen0/azure-openemr/dev/all-in-one/install.sh"
+                        "https://raw.githubusercontent.com/matthansen0/azure-openemr/main/all-in-one/install.sh"
                     ]
                 },
                 "protectedSettings": {

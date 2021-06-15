@@ -11,7 +11,7 @@ services:
     volumes:
     - databasevolume:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: rootDBP@ass1
   openemr:
     restart: always
     image: openemr/openemr:6.1.0
@@ -23,11 +23,11 @@ services:
     - sitevolume:/var/www/localhost/htdocs/openemr/sites
     environment:
       MYSQL_HOST: mysql
-      MYSQL_ROOT_PASS: root
+      MYSQL_ROOT_PASS: rootDBP@ass1
       MYSQL_USER: openemr
-      MYSQL_PASS: openemr
+      MYSQL_PASS: emrDBP@ass1
       OE_USER: admin
-      OE_PASS: pass
+      OE_PASS: openEMRonAzure!
     depends_on:
     - mysql
 volumes:
