@@ -44,7 +44,8 @@
       "defaultValue": "Ubuntu-2204",
       "allowedValues": [
               "Ubuntu-1804",
-              "Ubuntu-2004"
+              "Ubuntu-2004",
+              "Ubuntu-2204"
             ],
             "metadata": {
               "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
