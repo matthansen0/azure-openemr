@@ -41,11 +41,11 @@
     },
     "ubuntuOSVersion": {
       "type": "string",
-      "defaultValue": "Ubuntu-2204",
+      "defaultValue": "22_04-lts",
       "allowedValues": [
-              "Ubuntu-1804",
-              "Ubuntu-2004",
-              "Ubuntu-2204"
+              "18_04-lts",
+              "20_04-lts",
+              "22_04-lts"
             ],
             "metadata": {
               "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
@@ -235,7 +235,7 @@
           },
           "imageReference": {
             "publisher": "Canonical",
-            "offer": "UbuntuServer",
+            "offer": "Ubuntu",
             "sku": "[parameters('ubuntuOSVersion')]",
             "version": "latest"
           }
