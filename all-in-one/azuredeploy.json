@@ -41,64 +41,61 @@
     },
     "ubuntuOSVersion": {
       "type": "string",
-      "defaultValue": "18.04-LTS",
+      "defaultValue": "22_04-lts-gen2",
       "allowedValues": [
-        "12.04.5-LTS",
-        "14.04.5-LTS",
-        "16.04.0-LTS",
-        "18.04-LTS"
-      ],
-      "metadata": {
-        "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
-      }
-    },
-    "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]",
-      "metadata": {
-        "description": "Location for all resources."
-      }
-    },
-    "VmSize": {
-      "type": "string",
-      "defaultValue": "Standard_D1_v2",
-      "metadata": {
-        "description": "The size of the VM"
-      }
-    },
-    "virtualNetworkName": {
-      "type": "string",
-      "defaultValue": "vNet",
-      "metadata": {
-        "description": "Name of the VNET"
-      }
-    },
-    "subnetName": {
-      "type": "string",
-      "defaultValue": "Subnet",
-      "metadata": {
-        "description": "Name of the subnet in the virtual network"
-      }
-    },
-    "networkSecurityGroupName": {
-      "type": "string",
-      "defaultValue": "SecGroupNet",
-      "metadata": {
-        "description": "Name of the Network Security Group"
-      }
-    }
-  },
-  "variables": {
-    "publicIpAddressName": "[concat(parameters('vmName'), 'PublicIP' )]",
-    "networkInterfaceName": "[concat(parameters('vmName'),'NetInt')]",
-    "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]",
-    "osDiskType": "Standard_LRS",
-    "subnetAddressPrefix": "10.1.0.0/24",
-    "addressPrefix": "10.1.0.0/16",
-    "linuxConfiguration": {
-      "disablePasswordAuthentication": true,
-      "ssh": {
-        "publicKeys": [
+              "22_04-lts-gen2"
+            ],
+            "metadata": {
+              "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
+            }
+          },
+          "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+              "description": "Location for all resources."
+            }
+          },
+          "VmSize": {
+            "type": "string",
+            "defaultValue": "Standard_D2s_v3",
+            "metadata": {
+              "description": "The size of the VM"
+            }
+          },
+          "virtualNetworkName": {
+            "type": "string",
+            "defaultValue": "vNet",
+            "metadata": {
+              "description": "Name of the VNET"
+            }
+          },
+          "subnetName": {
+            "type": "string",
+            "defaultValue": "Subnet",
+            "metadata": {
+              "description": "Name of the subnet in the virtual network"
+            }
+          },
+          "networkSecurityGroupName": {
+            "type": "string",
+            "defaultValue": "SecGroupNet",
+            "metadata": {
+              "description": "Name of the Network Security Group"
+            }
+          }
+        },
+        "variables": {
+          "publicIpAddressName": "[concat(parameters('vmName'), 'PublicIP' )]",
+          "networkInterfaceName": "[concat(parameters('vmName'),'NetInt')]",
+          "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]",
+          "osDiskType": "Standard_LRS",
+          "subnetAddressPrefix": "10.1.0.0/24",
+          "addressPrefix": "10.1.0.0/16",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+              "publicKeys": [
           {
             "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
             "keyData": "[parameters('adminPasswordOrKey')]"
@@ -236,7 +233,7 @@
           },
           "imageReference": {
             "publisher": "Canonical",
-            "offer": "UbuntuServer",
+            "offer": "0001-com-ubuntu-server-jammy",
             "sku": "[parameters('ubuntuOSVersion')]",
             "version": "latest"
           }
