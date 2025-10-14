@@ -39,6 +39,41 @@ This section has yet to be developed, feel free to submit a PR!
 
 OpenEMR can be deployed directly on a WAMP or LAMP stack in IaaS, on Azure App Services, in ACI, or even AKS. It can use a local DB or one hosted by a VM directly, a container or Azure MySQL. There are many combinations of how to deploy this solution. Please feel free to submit a PR or an issue if you would like to see an alternative deployment method.
 
+## FHIR Connector for Azure Health Data Services:
+### Integration between OpenEMR FHIR API and Azure Health Data Services (AHDS)
+
+The FHIR connector enables synchronization of FHIR R4 resources from OpenEMR to Azure Health Data Services. This POC implementation demonstrates:
+- OAuth2 authentication with OpenEMR FHIR API
+- Azure AD authentication with AHDS
+- Patient and Observation resource synchronization
+- Retry logic for transient failures
+- Comprehensive logging and monitoring
+
+**Key Features:**
+- Azure Function-based connector (serverless, scalable)
+- Secure credential management (supports managed identity and Key Vault)
+- Production-ready ARM templates for deployment
+- Extensible architecture for additional FHIR resources
+
+**Quick Start:**
+
+See the [FHIR Connector README](fhir-connector/README.md) for detailed setup and configuration instructions.
+
+**Deployment:**
+
+Deploy the connector using Azure Resource Manager templates:
+
+```bash
+cd fhir-connector/deployment
+az group create --name openemr-fhir-rg --location eastus
+az deployment group create \
+  --resource-group openemr-fhir-rg \
+  --template-file function-app.json \
+  --parameters function-app.parameters.json
+```
+
+See [deployment guide](fhir-connector/deployment/README.md) for complete deployment instructions.
+
 ## Contributing:
 
 PRs and issues welcome!
