@@ -68,19 +68,106 @@ In OpenEMR:
    - **Redirect URI**: Not required for client credentials
 4. Save and note the **Client ID** and **Client Secret**
 
-### 3. Configure Azure AD App Registration
+### 3. Configure Azure AD (Entra ID) App Registration
 
-In Azure Portal:
-1. Navigate to **Azure Active Directory** > **App registrations**
-2. Click **New registration**
-3. Configure:
-   - **Name**: OpenEMR FHIR Connector
-   - **Supported account types**: Single tenant
-4. After creation, go to **Certificates & secrets** and create a new client secret
-5. Go to **API permissions** and add:
-   - **Azure Healthcare APIs** > **user_impersonation**
-   - Grant admin consent
-6. Note the **Application (client) ID**, **Directory (tenant) ID**, and **Client Secret**
+You can configure the app registration using either the Azure Portal (GUI) or Azure CLI.
+
+#### Option A: Using Azure Portal
+
+1. **Navigate to Microsoft Entra ID (formerly Azure Active Directory)**
+   - Go to [Azure Portal](https://portal.azure.com)
+   - Search for "Microsoft Entra ID" or "Azure Active Directory" in the top search bar
+   - Select **App registrations** from the left menu
+
+2. **Create New App Registration**
+   - Click **+ New registration**
+   - Configure:
+     - **Name**: OpenEMR FHIR Connector
+     - **Supported account types**: Accounts in this organizational directory only (Single tenant)
+     - **Redirect URI**: Leave blank
+   - Click **Register**
+
+3. **Collect Required IDs**
+   - On the Overview page, you'll see:
+     - **Application (client) ID** → Use this for `AHDS_CLIENT_ID`
+     - **Directory (tenant) ID** → Use this for `AHDS_TENANT_ID`
+   - Copy these values now
+
+4. **Create Client Secret**
+   - In the left menu, click **Certificates & secrets**
+   - Under **Client secrets**, click **+ New client secret**
+   - Add a description (e.g., "FHIR Connector Secret")
+   - Select expiration (recommend 24 months for production)
+   - Click **Add**
+   - **IMPORTANT**: Copy the **Value** immediately (not the Secret ID) → Use this for `AHDS_CLIENT_SECRET`
+   - You cannot view this value again after leaving the page
+
+5. **Configure API Permissions**
+   - In the left menu, click **API permissions**
+   - Click **+ Add a permission**
+   - Select **Azure Healthcare APIs**
+   - Select **Delegated permissions**
+   - Check **user_impersonation**
+   - Click **Add permissions**
+   - Click **Grant admin consent for [your tenant]** (requires admin)
+
+6. **Assign FHIR Role**
+   - Navigate to your **Azure Health Data Services** workspace
+   - Go to your **FHIR service**
+   - Click **Access control (IAM)** in the left menu
+   - Click **+ Add** > **Add role assignment**
+   - Select **FHIR Data Contributor** role
+   - Click **Next**
+   - Click **+ Select members**
+   - Search for "OpenEMR FHIR Connector" (your app name)
+   - Select it and click **Select**
+   - Click **Review + assign**
+
+#### Option B: Using Azure CLI
+
+```bash
+# Create app registration
+APP_NAME="openemr-fhir-connector"
+APP_ID=$(az ad app create \
+  --display-name $APP_NAME \
+  --query appId \
+  --output tsv)
+
+# Create service principal
+az ad sp create --id $APP_ID
+
+# Create client secret
+CLIENT_SECRET=$(az ad app credential reset \
+  --id $APP_ID \
+  --query password \
+  --output tsv)
+
+# Get tenant ID
+TENANT_ID=$(az account show --query tenantId --output tsv)
+
+# Save these values!
+echo "AHDS_CLIENT_ID: $APP_ID"
+echo "AHDS_CLIENT_SECRET: $CLIENT_SECRET"
+echo "AHDS_TENANT_ID: $TENANT_ID"
+
+# Assign FHIR Data Contributor role
+FHIR_RESOURCE_ID=$(az healthcareapis workspace fhir-service show \
+  --resource-group <your-resource-group> \
+  --workspace-name <your-workspace-name> \
+  --fhir-service-name <your-fhir-service-name> \
+  --query id \
+  --output tsv)
+
+az role assignment create \
+  --assignee $APP_ID \
+  --role "FHIR Data Contributor" \
+  --scope $FHIR_RESOURCE_ID
+```
+
+**Summary of Variables:**
+- `AHDS_TENANT_ID`: Your Azure tenant/directory ID (found in Entra ID Overview or via `az account show`)
+- `AHDS_CLIENT_ID`: The Application (client) ID from your app registration
+- `AHDS_CLIENT_SECRET`: The secret value created in Certificates & secrets (copy immediately)
 
 ### 4. Configure Local Settings
 
@@ -255,6 +342,43 @@ Key metrics to monitor:
 - Check network connectivity between function app and endpoints
 - Review Application Insights for detailed error messages
 - Verify FHIR resource format compatibility
+
+### How to Find Your Azure AD (Entra ID) Configuration Values
+
+If you need to retrieve or verify these values:
+
+**Finding AHDS_TENANT_ID (Directory/Tenant ID):**
+- **Azure Portal**: Microsoft Entra ID → Overview → **Tenant ID** (shown at top)
+- **Azure CLI**: `az account show --query tenantId --output tsv`
+
+**Finding AHDS_CLIENT_ID (Application ID):**
+- **Azure Portal**: Microsoft Entra ID → App registrations → Find your app → Overview → **Application (client) ID**
+- **Azure CLI**: `az ad app list --display-name "openemr-fhir-connector" --query [0].appId --output tsv`
+
+**Finding AHDS_CLIENT_SECRET:**
+- ⚠️ **Cannot be retrieved** - Client secrets are only displayed once when created for security
+- **If lost**: Create a new secret:
+  - **Azure Portal**: App registration → Certificates & secrets → Client secrets → + New client secret
+  - **Azure CLI**: `az ad app credential reset --id <your-app-id> --query password --output tsv`
+  - Update your Function App settings with the new secret value
+
+**Finding AHDS_FHIR_ENDPOINT:**
+- **Azure Portal**: Azure Health Data Services → Your workspace → Your FHIR service → Overview
+  - Look for the FHIR endpoint URL: `https://<workspace>-<service>.fhir.azurehealthcareapis.com`
+- **Azure CLI**: 
+  ```bash
+  az healthcareapis workspace fhir-service show \
+    --resource-group <resource-group> \
+    --workspace-name <workspace-name> \
+    --fhir-service-name <service-name> \
+    --query properties.authenticationConfiguration.audience \
+    --output tsv
+  ```
+
+**Verifying Role Assignment:**
+- Navigate to your FHIR service → Access control (IAM) → Role assignments
+- Search for your app name "openemr-fhir-connector"
+- Confirm it has the "FHIR Data Contributor" role
 
 ## Extension Points
 

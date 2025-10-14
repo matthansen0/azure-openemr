@@ -44,9 +44,11 @@ FHIR_ENDPOINT=$(az deployment group show \
 echo "FHIR Endpoint: $FHIR_ENDPOINT"
 ```
 
-### 2. Configure Azure AD App Registration
+### 2. Configure Azure AD (Entra ID) App Registration
 
-Create an Azure AD app registration for the connector:
+Create an app registration for the connector. You can use either Azure CLI or the Azure Portal.
+
+#### Using Azure CLI
 
 ```bash
 # Create app registration
@@ -68,10 +70,26 @@ CLIENT_SECRET=$(az ad app credential reset \
 # Get tenant ID
 TENANT_ID=$(az account show --query tenantId --output tsv)
 
-echo "App ID: $APP_ID"
-echo "Client Secret: $CLIENT_SECRET"
-echo "Tenant ID: $TENANT_ID"
+echo "App ID (AHDS_CLIENT_ID): $APP_ID"
+echo "Client Secret (AHDS_CLIENT_SECRET): $CLIENT_SECRET"
+echo "Tenant ID (AHDS_TENANT_ID): $TENANT_ID"
 ```
+
+#### Using Azure Portal
+
+1. Go to **Microsoft Entra ID** (formerly Azure Active Directory)
+2. Click **App registrations** → **+ New registration**
+3. Enter name: `openemr-fhir-connector`
+4. Select **Accounts in this organizational directory only**
+5. Click **Register**
+6. From the Overview page, copy:
+   - **Application (client) ID** → This is your `AHDS_CLIENT_ID`
+   - **Directory (tenant) ID** → This is your `AHDS_TENANT_ID`
+7. Go to **Certificates & secrets** → **+ New client secret**
+8. Add description and expiration, click **Add**
+9. **Copy the secret Value immediately** → This is your `AHDS_CLIENT_SECRET` (cannot be viewed again)
+
+**Save all three values - you'll need them in step 5.**
 
 ### 3. Grant FHIR Permissions
 

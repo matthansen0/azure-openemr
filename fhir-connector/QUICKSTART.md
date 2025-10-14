@@ -88,7 +88,11 @@ az deployment group show \
   --query properties.outputs.fhirServiceUrl.value
 ```
 
-## Step 4: Configure Azure AD Authentication
+## Step 4: Configure Azure AD (Entra ID) Authentication
+
+You can configure authentication using either Azure CLI (faster) or Azure Portal (more visual).
+
+### Option A: Using Azure CLI (Recommended for Automation)
 
 ```bash
 # Create app registration
@@ -128,6 +132,67 @@ az role assignment create \
   --role "FHIR Data Contributor" \
   --scope $FHIR_RESOURCE_ID
 ```
+
+### Option B: Using Azure Portal (Step-by-Step GUI)
+
+If you prefer using the Azure Portal interface:
+
+1. **Open Azure Portal and Navigate to Entra ID**
+   - Go to https://portal.azure.com
+   - Search for "Microsoft Entra ID" (or "Azure Active Directory") in the top search bar
+   - Click on the service
+
+2. **Create App Registration**
+   - Click **App registrations** in the left sidebar
+   - Click **+ New registration** at the top
+   - Fill in:
+     - Name: `openemr-fhir-connector`
+     - Supported account types: **Accounts in this organizational directory only**
+     - Redirect URI: Leave blank
+   - Click **Register**
+
+3. **Copy Application and Tenant IDs**
+   - You'll be taken to the app's Overview page
+   - Copy these values (you'll need them later):
+     - **Application (client) ID** → Save as `AHDS_CLIENT_ID`
+     - **Directory (tenant) ID** → Save as `AHDS_TENANT_ID`
+
+4. **Create Client Secret**
+   - In the left menu, click **Certificates & secrets**
+   - Click **Client secrets** tab
+   - Click **+ New client secret**
+   - Description: `FHIR Connector Secret`
+   - Expires: Select appropriate duration (e.g., 24 months)
+   - Click **Add**
+   - **⚠️ IMPORTANT**: Copy the **Value** field immediately → Save as `AHDS_CLIENT_SECRET`
+   - This value is only shown once and cannot be retrieved later!
+
+5. **Add API Permissions** (Skip if using managed identity)
+   - Click **API permissions** in the left menu
+   - Click **+ Add a permission**
+   - Select **APIs my organization uses** tab
+   - Search for and select **Azure Healthcare APIs**
+   - Select **Delegated permissions**
+   - Check **user_impersonation**
+   - Click **Add permissions**
+   - Click **✓ Grant admin consent for [YourTenant]** (requires admin role)
+
+6. **Assign FHIR Data Contributor Role**
+   - Navigate to **Azure Health Data Services** in the portal
+   - Select your workspace, then your FHIR service
+   - Click **Access control (IAM)**
+   - Click **+ Add** → **Add role assignment**
+   - On the Role tab, select **FHIR Data Contributor**
+   - Click **Next**
+   - Click **+ Select members**
+   - Search for `openemr-fhir-connector`
+   - Select it and click **Select**
+   - Click **Review + assign**
+
+**You should now have these three values:**
+- `AHDS_TENANT_ID`: Directory (tenant) ID from step 3
+- `AHDS_CLIENT_ID`: Application (client) ID from step 3
+- `AHDS_CLIENT_SECRET`: Secret value from step 4
 
 ## Step 5: Configure Local Development Environment
 
