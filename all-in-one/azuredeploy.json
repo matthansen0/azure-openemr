@@ -91,6 +91,46 @@
             "metadata": {
               "description": "Name of the Network Security Group"
             }
+          },
+          "deployFhirConnector": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+              "description": "Deploy FHIR Connector and Azure Health Data Services. Set to true to enable FHIR synchronization."
+            }
+          },
+          "fhirWorkspaceName": {
+            "type": "string",
+            "defaultValue": "[concat('openemr-ahds-', uniqueString(resourceGroup().id))]",
+            "metadata": {
+              "description": "Name of the Azure Health Data Services workspace (only used if deployFhirConnector is true)."
+            }
+          },
+          "fhirServiceName": {
+            "type": "string",
+            "defaultValue": "fhir",
+            "metadata": {
+              "description": "Name of the FHIR service (only used if deployFhirConnector is true)."
+            }
+          },
+          "functionAppName": {
+            "type": "string",
+            "defaultValue": "[concat('openemr-fhir-func-', uniqueString(resourceGroup().id))]",
+            "metadata": {
+              "description": "Name of the Azure Function App for FHIR connector (only used if deployFhirConnector is true)."
+            }
+          },
+          "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+              "Standard_LRS",
+              "Standard_GRS",
+              "Standard_RAGRS"
+            ],
+            "metadata": {
+              "description": "Storage Account type for Function App (only used if deployFhirConnector is true)."
+            }
           }
         },
         "variables": {
@@ -111,7 +151,11 @@
           }
         ]
       }
-    }
+    },
+    "hostingPlanName": "[concat(parameters('functionAppName'), '-plan')]",
+    "applicationInsightsName": "[concat(parameters('functionAppName'), '-insights')]",
+    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'azfunctions')]",
+    "functionWorkerRuntime": "node"
   },
   "resources": [
     {
@@ -287,6 +331,135 @@
           "commandToExecute": "sh install.sh"
         }
       }
+    },
+    {
+      "condition": "[parameters('deployFhirConnector')]",
+      "type": "Microsoft.HealthcareApis/workspaces",
+      "apiVersion": "2022-06-01",
+      "name": "[parameters('fhirWorkspaceName')]",
+      "location": "[parameters('location')]",
+      "properties": {}
+    },
+    {
+      "condition": "[parameters('deployFhirConnector')]",
+      "type": "Microsoft.HealthcareApis/workspaces/fhirservices",
+      "apiVersion": "2022-06-01",
+      "name": "[concat(parameters('fhirWorkspaceName'), '/', parameters('fhirServiceName'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.HealthcareApis/workspaces', parameters('fhirWorkspaceName'))]"
+      ],
+      "kind": "fhir-R4",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "authenticationConfiguration": {
+          "authority": "[concat('https://login.microsoftonline.com/', subscription().tenantId)]",
+          "audience": "[concat('https://', parameters('fhirWorkspaceName'), '-', parameters('fhirServiceName'), '.fhir.azurehealthcareapis.com')]",
+          "smartProxyEnabled": false
+        },
+        "corsConfiguration": {
+          "origins": [],
+          "headers": [],
+          "methods": [],
+          "maxAge": 0,
+          "allowCredentials": false
+        },
+        "exportConfiguration": {
+          "storageAccountName": ""
+        }
+      }
+    },
+    {
+      "condition": "[parameters('deployFhirConnector')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('storageAccountName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('storageAccountType')]"
+      },
+      "kind": "Storage",
+      "properties": {
+        "supportsHttpsTrafficOnly": true,
+        "minimumTlsVersion": "TLS1_2"
+      }
+    },
+    {
+      "condition": "[parameters('deployFhirConnector')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('hostingPlanName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Y1",
+        "tier": "Dynamic"
+      },
+      "properties": {}
+    },
+    {
+      "condition": "[parameters('deployFhirConnector')]",
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[variables('applicationInsightsName')]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "Request_Source": "rest"
+      }
+    },
+    {
+      "condition": "[parameters('deployFhirConnector')]",
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-03-01",
+      "name": "[parameters('functionAppName')]",
+      "location": "[parameters('location')]",
+      "kind": "functionapp",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-05-01').keys[0].value)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-05-01').keys[0].value)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[toLower(parameters('functionAppName'))]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~4"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2020-02-02').InstrumentationKey]"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "[variables('functionWorkerRuntime')]"
+            },
+            {
+              "name": "WEBSITE_NODE_DEFAULT_VERSION",
+              "value": "~18"
+            }
+          ],
+          "ftpsState": "FtpsOnly",
+          "minTlsVersion": "1.2"
+        },
+        "httpsOnly": true
+      }
     }
   ],
   "outputs": {
@@ -301,6 +474,21 @@
     "sshCommand": {
       "type": "string",
       "value": "[concat('ssh ', parameters('adminUsername'), '@', reference(variables('publicIPAddressName')).dnsSettings.fqdn)]"
+    },
+    "fhirServiceUrl": {
+      "condition": "[parameters('deployFhirConnector')]",
+      "type": "string",
+      "value": "[if(parameters('deployFhirConnector'), concat('https://', parameters('fhirWorkspaceName'), '-', parameters('fhirServiceName'), '.fhir.azurehealthcareapis.com'), 'Not deployed')]"
+    },
+    "functionAppName": {
+      "condition": "[parameters('deployFhirConnector')]",
+      "type": "string",
+      "value": "[if(parameters('deployFhirConnector'), parameters('functionAppName'), 'Not deployed')]"
+    },
+    "functionAppUrl": {
+      "condition": "[parameters('deployFhirConnector')]",
+      "type": "string",
+      "value": "[if(parameters('deployFhirConnector'), concat('https://', reference(resourceId('Microsoft.Web/sites', parameters('functionAppName'))).defaultHostName), 'Not deployed')]"
     }
   }
 }
