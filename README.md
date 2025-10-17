@@ -24,6 +24,12 @@ The ***default credentials*** for this deployment are in the [docker-compose.yml
 
 You may also want to [change the MySQL Credentials](https://www.mysqltutorial.org/mysql-changing-password.aspx) and update them in OpenEMR ``In order to change the mysql user and password you need to provide the correct credentials in the file sqlconf.php, which can be found under /sites/default/sqlconf.php``.
 
+## Deploying with a Custom Branch
+
+When using the **Deploy to Azure** button, you will be prompted for a `branch` parameter. Enter `main` to deploy the production branch, or `dev` to deploy the development branch. This allows you to deploy from any branch without modifying the code or template files.
+
+If you do not see the prompt for `branch`, ensure that the `branch` parameter is not set in the `azuredeploy.parameters.json` file (this is the default in this repository).
+
 ## IaaS Web & PaaS DB:
 ### Deployment of OpenEMR Docker Container to an Azure IaaS Virtual Machine + Azure MySQL
 
