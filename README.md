@@ -16,6 +16,13 @@ This template allows you to deploy an Ubuntu Server 22.04-LTS VM with Docker
 and starts an OpenEMR container listening an port 80 which uses MySQL database running
 in a separate but linked Docker container, which are created using Docker Compose. The shell script validates service functionality before finishing; the deployment typically takes about 15 minutes.
 
+**Optional FHIR Connector and Azure Health Data Services**: This deployment template now includes optional support for deploying the FHIR connector and Azure Health Data Services (AHDS). Set the `deployFhirConnector` parameter to `true` to enable FHIR synchronization between OpenEMR and AHDS. This will deploy:
+- Azure Health Data Services workspace and FHIR R4 service
+- Azure Function App for the FHIR connector
+- Storage Account and Application Insights for monitoring
+
+If you don't need FHIR integration, leave `deployFhirConnector` set to `false` (default) and only the OpenEMR VM will be deployed.
+
 This deployment will listen on HTTP/80 and HTTPS/443 (with a self-signed cert) by default and has a public IP resources associated with it, if this is for an internal deployment please [dissociate the public IP address](https://docs.microsoft.com/en-us/azure/virtual-network/remove-public-ip-address-vm) from the VM.
 
 The ***default credentials*** for this deployment are in the [docker-compose.yml file](all-in-one/docker-compose.yml) and by default the login for OpenEMR is ``admin/openEMRonAzure!``. You can change these credentials using the steps below.
@@ -63,9 +70,11 @@ The FHIR connector enables synchronization of FHIR R4 resources from OpenEMR to 
 
 **Quick Start:**
 
-See the [FHIR Connector README](fhir-connector/README.md) for detailed setup and configuration instructions.
+The FHIR Connector can now be deployed as part of the unified "Deploy to Azure" deployment (see [All-in-one](#all-in-one) section above). Simply set the `deployFhirConnector` parameter to `true` when deploying.
 
-**Deployment:**
+Alternatively, you can deploy the FHIR connector standalone. See the [FHIR Connector README](fhir-connector/README.md) for detailed setup and configuration instructions.
+
+**Standalone Deployment:**
 
 Deploy the connector using Azure Resource Manager templates:
 
@@ -79,6 +88,16 @@ az deployment group create \
 ```
 
 See [deployment guide](fhir-connector/deployment/README.md) for complete deployment instructions.
+
+**Post-Deployment Configuration:**
+
+After deploying with the FHIR connector enabled, you'll need to:
+1. Configure OpenEMR API client credentials (see [FHIR Connector README](fhir-connector/README.md))
+2. Configure Azure AD app registration for AHDS authentication
+3. Set the required environment variables in the Function App
+4. Deploy the function code using Azure Functions Core Tools
+
+See the [FHIR Connector README](fhir-connector/README.md) for detailed configuration steps.
 
 ## Contributing:
 
