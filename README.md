@@ -37,6 +37,14 @@ When using the **Deploy to Azure** button, you will be prompted for a `branch` p
 
 If you do not see the prompt for `branch`, ensure that the `branch` parameter is not set in the `azuredeploy.parameters.json` file (this is the default in this repository).
 
+### Unified Deployment with Optional FHIR Integration
+
+For detailed deployment instructions, including how to enable FHIR connector and Azure Health Data Services integration, see the [Deployment Guide](all-in-one/DEPLOYMENT-GUIDE.md).
+
+**Quick summary:**
+- **VM-only deployment**: Use default parameters (deployFhirConnector=false)
+- **With FHIR integration**: Set deployFhirConnector=true in the deployment parameters
+
 ## IaaS Web & PaaS DB:
 ### Deployment of OpenEMR Docker Container to an Azure IaaS Virtual Machine + Azure MySQL
 
