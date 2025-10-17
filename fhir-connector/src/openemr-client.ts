@@ -120,7 +120,7 @@ export class OpenEMRClient {
       return response.data;
     } catch (error) {
       console.error('Failed to get capability statement:', error);
-      throw new Error(`Failed to get capability statement: ${error.message}`);
+      throw new Error(`Failed to get capability statement: ${error?.message ?? String(error)}`);
     }
   }
 }
