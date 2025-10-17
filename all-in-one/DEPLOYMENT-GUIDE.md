@@ -94,9 +94,19 @@ Deployment typically takes 15-20 minutes for VM-only, or 20-30 minutes with FHIR
 
 #### For Deployment with FHIR Connector
 
-After deployment completes, additional configuration is required:
+After deployment completes, additional configuration is required to enable FHIR synchronization. There are 5 main configuration steps:
+
+1. **Configure OpenEMR API Client** - Register API credentials in OpenEMR
+2. **Configure Azure AD App Registration** - Set up authentication for AHDS
+3. **Assign FHIR Data Contributor Role** - Grant permissions to access FHIR service
+4. **Configure Function App Settings** - Set environment variables
+5. **Deploy Function Code** - Publish the connector code to Azure
+
+Each step is detailed below:
 
 ##### Step 1: Configure OpenEMR API Client
+
+**Summary**: Register an API client in OpenEMR to allow the FHIR connector to access OpenEMR's FHIR API.
 
 1. Access OpenEMR web interface
 2. Navigate to **Administration** > **System** > **API Clients**
@@ -108,6 +118,8 @@ After deployment completes, additional configuration is required:
 5. Save and note the **Client ID** and **Client Secret**
 
 ##### Step 2: Configure Azure AD App Registration
+
+**Summary**: Create an Azure AD app registration to authenticate the FHIR connector with Azure Health Data Services.
 
 1. Go to **Microsoft Entra ID** in Azure Portal
 2. Click **App registrations** > **+ New registration**
@@ -127,6 +139,8 @@ After deployment completes, additional configuration is required:
 
 ##### Step 3: Assign FHIR Data Contributor Role
 
+**Summary**: Grant the app registration permission to read and write FHIR data.
+
 1. Navigate to your AHDS FHIR service in Azure Portal
 2. Click **Access control (IAM)**
 3. Click **+ Add** > **Add role assignment**
@@ -135,6 +149,8 @@ After deployment completes, additional configuration is required:
 6. Click **Review + assign**
 
 ##### Step 4: Configure Function App Settings
+
+**Summary**: Set the required environment variables for the FHIR connector to connect to both OpenEMR and AHDS.
 
 1. Navigate to the deployed Function App in Azure Portal
 2. Click **Configuration** under Settings
@@ -154,7 +170,11 @@ AHDS_CLIENT_SECRET=<app-client-secret-from-step-2>
 
 ##### Step 5: Deploy Function Code
 
-1. Clone the repository locally:
+**Summary**: Build and publish the FHIR connector code to the Azure Function App.
+
+**Note**: The function app name can be found in the deployment outputs or in the Azure Portal under Function Apps.
+
+1. Clone the repository locally (or use your fork):
    ```bash
    git clone https://github.com/matthansen0/azure-openemr.git
    cd azure-openemr/fhir-connector
@@ -166,17 +186,19 @@ AHDS_CLIENT_SECRET=<app-client-secret-from-step-2>
    npm run build
    ```
 
-3. Publish to Azure:
+3. Publish to Azure (replace `<function-app-name>` with your Function App name from deployment outputs):
    ```bash
    func azure functionapp publish <function-app-name>
    ```
 
-4. Verify deployment:
+4. Verify deployment (this will test the sync-patient endpoint with a sample patient ID):
    ```bash
    curl -X POST "https://<function-app-name>.azurewebsites.net/api/sync-patient" \
      -H "Content-Type: application/json" \
      -d '{"patientId": "1"}'
    ```
+   
+   Expected response: A success message indicating the patient was synced, or an error if patient ID 1 doesn't exist in OpenEMR.
 
 ## Deployment Outputs
 
