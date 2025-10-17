@@ -44,7 +44,7 @@ export class OpenEMRClient {
       console.log('Successfully authenticated with OpenEMR');
     } catch (error) {
       console.error('Failed to authenticate with OpenEMR:', error);
-      throw new Error(`OpenEMR authentication failed: ${error.message}`);
+      throw new Error(`OpenEMR authentication failed: ${error?.message ?? String(error)}`);
     }
   }
 
