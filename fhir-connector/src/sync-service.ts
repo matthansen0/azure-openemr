@@ -119,7 +119,7 @@ export class FHIRSyncService {
         success: false,
         resourceType: 'Observation',
         resourceId: observationId,
-        error: error.message,
+        error: error?.message ?? String(error),
       };
     }
   }
