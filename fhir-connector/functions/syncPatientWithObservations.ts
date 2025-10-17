@@ -71,7 +71,7 @@ export async function syncPatientWithObservations(
       status: 500,
       jsonBody: {
         error: 'Internal server error',
-        message: error.message,
+        message: error?.message ?? String(error),
       },
     };
   }
