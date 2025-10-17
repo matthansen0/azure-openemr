@@ -2,6 +2,14 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "branch": {
+      "type": "string",
+      "defaultValue": "main",
+      "allowedValues": ["main", "dev"],
+      "metadata": {
+        "description": "Git branch to deploy (main or dev)."
+      }
+    },
     "vmName": {
       "type": "string",
       "defaultValue": "OpenEMR",
@@ -86,8 +94,9 @@
           }
         },
         "variables": {
-          "publicIpAddressName": "[concat(parameters('vmName'), 'PublicIP' )]",
-          "networkInterfaceName": "[concat(parameters('vmName'),'NetInt')]",
+          "vmNameWithBranch": "[concat(parameters('vmName'), '-', parameters('branch'))]",
+          "publicIpAddressName": "[concat(variables('vmNameWithBranch'), 'PublicIP' )]",
+          "networkInterfaceName": "[concat(variables('vmNameWithBranch'),'NetInt')]",
           "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]",
           "osDiskType": "Standard_LRS",
           "subnetAddressPrefix": "10.1.0.0/24",
@@ -108,7 +117,7 @@
     {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2020-06-01",
-      "name": "[variables('networkInterfaceName')]",
+  "name": "[variables('networkInterfaceName')]",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]",
@@ -197,7 +206,7 @@
     {
       "type": "Microsoft.Network/publicIpAddresses",
       "apiVersion": "2020-06-01",
-      "name": "[variables('publicIpAddressName')]",
+  "name": "[variables('publicIpAddressName')]",
       "location": "[parameters('location')]",
       "sku": {
         "name": "Basic",
@@ -215,7 +224,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2020-06-01",
-      "name": "[parameters('vmName')]",
+  "name": "[variables('vmNameWithBranch')]",
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
@@ -245,8 +254,8 @@
             }
           ]
         },
-        "osProfile": {
-          "computerName": "[parameters('vmName')]",
+      "osProfile": {
+        "computerName": "[variables('vmNameWithBranch')]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPasswordOrKey')]",
           "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"

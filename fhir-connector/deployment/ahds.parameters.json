@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": {
+      "value": "openemr-ahds-workspace"
+    },
+    "fhirServiceName": {
+      "value": "fhir"
+    },
+    "fhirKind": {
+      "value": "fhir-R4"
+    }
+  }
+}
