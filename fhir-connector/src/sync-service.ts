@@ -62,7 +62,7 @@ export class FHIRSyncService {
       console.log(`Retrieved patient from OpenEMR:`, patient.id);
 
       // Push to AHDS
-      const result = await this.retry(
+      await this.retry(
         () => this.ahdsClient.upsertResource(patient),
         `Upsert Patient/${patientId} to AHDS`
       );
