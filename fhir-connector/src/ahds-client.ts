@@ -127,7 +127,7 @@ export class AHDSClient {
       return response.data;
     } catch (error) {
       console.error(`Failed to search ${resourceType}:`, error);
-      throw new Error(`Failed to search FHIR resources: ${error.message}`);
+      throw new Error(`Failed to search FHIR resources: ${error?.message ?? String(error)}`);
     }
   }
 }
