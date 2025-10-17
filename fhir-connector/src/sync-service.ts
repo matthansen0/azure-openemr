@@ -33,7 +33,7 @@ export class FHIRSyncService {
         return await operation();
       } catch (error) {
         lastError = error;
-        console.warn(`${operationName} failed (attempt ${attempt}/${this.maxRetries}):`, error.message);
+        console.warn(`${operationName} failed (attempt ${attempt}/${this.maxRetries}):`, error?.message ?? String(error));
         
         if (attempt < this.maxRetries) {
           const delay = this.retryDelay * Math.pow(2, attempt - 1); // exponential backoff
