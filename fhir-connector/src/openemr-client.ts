@@ -44,7 +44,7 @@ export class OpenEMRClient {
       console.log('Successfully authenticated with OpenEMR');
     } catch (error) {
       console.error('Failed to authenticate with OpenEMR:', error);
-      throw new Error(`OpenEMR authentication failed: ${error?.message ?? String(error)}`);
+      throw new Error(`OpenEMR authentication failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -76,7 +76,7 @@ export class OpenEMRClient {
       return response.data;
     } catch (error) {
       console.error(`Failed to get ${resourceType}/${resourceId}:`, error);
-      throw new Error(`Failed to retrieve FHIR resource: ${error.message}`);
+      throw new Error(`Failed to retrieve FHIR resource: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -100,7 +100,7 @@ export class OpenEMRClient {
       return response.data;
     } catch (error) {
       console.error(`Failed to search ${resourceType}:`, error);
-      throw new Error(`Failed to search FHIR resources: ${error.message}`);
+      throw new Error(`Failed to search FHIR resources: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -120,7 +120,7 @@ export class OpenEMRClient {
       return response.data;
     } catch (error) {
       console.error('Failed to get capability statement:', error);
-      throw new Error(`Failed to get capability statement: ${error?.message ?? String(error)}`);
+      throw new Error(`Failed to get capability statement: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }

@@ -64,7 +64,7 @@ export async function syncPatient(request: HttpRequest, context: InvocationConte
       status: 500,
       jsonBody: {
         error: 'Internal server error',
-        message: error?.message ?? String(error),
+        message: error instanceof Error ? error.message : String(error),
       },
     };
   }
