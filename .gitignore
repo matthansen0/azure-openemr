@@ -348,3 +348,21 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Node.js / TypeScript
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Azure Functions
+local.settings.json
+.vscode/
+
+# Deployment artifacts
+deployment-info.json
+*.zip
+
+# Environment files
+.env
+.env.local
+.env.*.local
