@@ -26,14 +26,14 @@ export class FHIRSyncService {
     operation: () => Promise<T>,
     operationName: string
   ): Promise<T> {
-    let lastError: Error | null = null;
+    let lastError: Error = new Error('Unknown error');
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
         return await operation();
       } catch (error) {
-        lastError = error;
-        console.warn(`${operationName} failed (attempt ${attempt}/${this.maxRetries}):`, error?.message ?? String(error));
+        lastError = error instanceof Error ? error : new Error(String(error));
+        console.warn(`${operationName} failed (attempt ${attempt}/${this.maxRetries}):`, lastError.message);
         
         if (attempt < this.maxRetries) {
           const delay = this.retryDelay * Math.pow(2, attempt - 1); // exponential backoff
@@ -80,7 +80,7 @@ export class FHIRSyncService {
         success: false,
         resourceType: 'Patient',
         resourceId: patientId,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
@@ -119,7 +119,7 @@ export class FHIRSyncService {
         success: false,
         resourceType: 'Observation',
         resourceId: observationId,
-        error: error?.message ?? String(error),
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }

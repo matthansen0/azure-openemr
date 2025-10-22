@@ -41,7 +41,7 @@ export class AHDSClient {
       console.log('Successfully authenticated with Azure Health Data Services');
     } catch (error) {
       console.error('Failed to authenticate with AHDS:', error);
-      throw new Error(`AHDS authentication failed: ${error.message}`);
+      throw new Error(`AHDS authentication failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -81,9 +81,9 @@ export class AHDSClient {
 
       console.log(`Successfully upserted ${resourceType}/${resourceId || response.data.id}`);
       return response.data;
-    } catch (error) {
-      console.error(`Failed to upsert ${resourceType}:`, error.response?.data || error.message);
-      throw new Error(`Failed to upsert FHIR resource: ${error.message}`);
+    } catch (error: any) {
+      console.error(`Failed to upsert ${resourceType}:`, error?.response?.data || error?.message || String(error));
+      throw new Error(`Failed to upsert FHIR resource: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -101,12 +101,12 @@ export class AHDSClient {
         },
       });
       return response.data;
-    } catch (error) {
-      if (error.response?.status === 404) {
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
         return null;
       }
       console.error(`Failed to get ${resourceType}/${resourceId}:`, error);
-      throw new Error(`Failed to get FHIR resource: ${error.message}`);
+      throw new Error(`Failed to get FHIR resource: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -127,7 +127,7 @@ export class AHDSClient {
       return response.data;
     } catch (error) {
       console.error(`Failed to search ${resourceType}:`, error);
-      throw new Error(`Failed to search FHIR resources: ${error?.message ?? String(error)}`);
+      throw new Error(`Failed to search FHIR resources: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }

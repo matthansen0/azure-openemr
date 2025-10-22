@@ -3,6 +3,24 @@
 
 This repository contains automation to deploy [OpenEMR](https://www.open-emr.org/) on Azure. Great work being done on this project on the [OpenEMR Repo](https://github.com/openemr/openemr).
 
+## Quick Start: Integrated Deployment (Recommended)
+
+For a complete, production-ready deployment including OpenEMR, Azure Health Data Services (AHDS), and automatic FHIR synchronization:
+
+**[→ See Integrated Deployment Guide](integrated-deployment/README.md)**
+
+This automated deployment includes:
+- ✅ OpenEMR 7.0.2 on Azure VM
+- ✅ Azure Health Data Services (FHIR R4)
+- ✅ FHIR Connector with automatic sync every minute
+- ✅ Complete configuration with minimal user interaction
+- ✅ Verification script to validate the integration
+
+```bash
+cd integrated-deployment
+./deploy.sh
+```
+
 ## All-in-one:
 ### OpenEMR+MySQL Containers with Docker Compose on an Azure IaaS Virtual Machine
 
