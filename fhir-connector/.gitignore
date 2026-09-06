@@ -1,8 +1,0 @@
-node_modules/
-dist/
-.vscode/
-local.settings.json
-*.log
-.env
-.DS_Store
-package-lock.json

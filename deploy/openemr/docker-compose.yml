@@ -1,0 +1,74 @@
+# OpenEMR 8.3.0 + MariaDB 11.8.8 Production Stack with Caddy TLS Proxy
+version: '3.8'
+
+services:
+  mysql:
+    restart: always
+    image: mariadb:11.8.8@sha256:d9f7eb2637296652f24b484afd5d246f759f49f5babcadc6a9e344c9acb75fbf
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    volumes:
+      - databasevolume:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-openemr}
+      MYSQL_USER: ${MYSQL_USER:-openemr}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+      - openemr-net
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  openemr:
+    restart: always
+    image: openemr/openemr:8.3.0
+    expose:
+      - "80"
+    volumes:
+      - logvolume01:/var/log
+      - sitevolume:/var/www/localhost/htdocs/openemr/sites
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_ROOT_PASS: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER:-openemr}
+      MYSQL_PASS: ${MYSQL_PASSWORD}
+      OE_USER: ${OE_USER:-admin}
+      OE_PASS: ${OE_PASS}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - openemr-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  caddy:
+    restart: always
+    image: caddy:2.8-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - openemr
+    networks:
+      - openemr-net
+
+networks:
+  openemr-net:
+    driver: bridge
+
+volumes:
+  databasevolume: {}
+  sitevolume: {}
+  logvolume01: {}
+  caddy_data: {}
+  caddy_config: {}

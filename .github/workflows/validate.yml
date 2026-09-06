@@ -1,0 +1,39 @@
+name: Validate
+
+on:
+  push:
+    branches: [ main, 'feature/**' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Connector Dependencies
+        run: npm --prefix src/fhir-connector ci || npm --prefix src/fhir-connector install
+
+      - name: Typecheck Connector
+        run: npm --prefix src/fhir-connector run typecheck
+
+      - name: Test Connector
+        run: npm --prefix src/fhir-connector test
+
+      - name: Install Viewer Dependencies
+        run: npm --prefix src/fhir-viewer ci || npm --prefix src/fhir-viewer install
+
+      - name: Typecheck Viewer
+        run: npm --prefix src/fhir-viewer run typecheck
+
+      - name: Test Viewer
+        run: npm --prefix src/fhir-viewer test
+
+      - name: Run Repository Static Validator
+        run: bash scripts/validate.sh

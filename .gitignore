@@ -198,6 +198,30 @@ PublishScripts/
 
 # Microsoft Azure Build Output
 csx/
+
+# Azure Developer CLI
+.azure/
+.azd/
+*.bicep.*.json
+
+# Node.js and TypeScript
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local configuration and generated secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.secrets*
+
+# Deployment evidence
+.artifacts/
+deployment-logs/
 *.build.csdef
 
 # Microsoft Azure Emulator
@@ -348,21 +372,3 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-
-# Node.js / TypeScript
-node_modules/
-dist/
-*.tsbuildinfo
-
-# Azure Functions
-local.settings.json
-.vscode/
-
-# Deployment artifacts
-deployment-info.json
-*.zip
-
-# Environment files
-.env
-.env.local
-.env.*.local
