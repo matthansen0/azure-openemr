@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+name: openemr-ahds-poc
+metadata:
+  template: openemr-ahds-poc@1.0.0
+requiredVersions:
+  azd: ">= 1.18.0"
+
+infra:
+  provider: bicep
+  path: infra
+
+services:
+  fhir-connector:
+    project: src/fhir-connector
+    language: js
+    host: function
+  fhir-viewer:
+    project: src/fhir-viewer
+    language: js
+    host: function
+
+hooks:
+  preprovision:
+    shell: pwsh
+    run: scripts/hooks/preprovision.ps1
+  postprovision:
+    shell: pwsh
+    run: scripts/hooks/postprovision.ps1
+  postdeploy:
+    shell: pwsh
+    run: scripts/hooks/postdeploy.ps1
+  predown:
+    shell: pwsh
+    run: scripts/hooks/predown.ps1

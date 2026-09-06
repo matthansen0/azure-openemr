@@ -5,9 +5,8 @@
     "branch": {
       "type": "string",
       "defaultValue": "main",
-      "allowedValues": ["main", "dev"],
       "metadata": {
-        "description": "Git branch to deploy (main or dev)."
+        "description": "Git branch to deploy (e.g., main, dev, or custom branch name)."
       }
     },
     "vmName": {

@@ -1,85 +1,91 @@
-# OpenEMR on Azure
-<img src="https://www.prlog.org/12704630-openemr-logo.png">
+# OpenEMR to Azure Health Data Services
 
-This repository contains automation to deploy [OpenEMR](https://www.open-emr.org/) on Azure. Great work being done on this project on the [OpenEMR Repo](https://github.com/openemr/openemr).
+This repository is rebuilding the original OpenEMR-to-AHDS idea as a secure,
+synthetic-data proof of concept. The primary deployment is an `azd` workflow
+backed by modular Bicep. It provisions OpenEMR, an Azure Health Data Services
+FHIR R4 service, a one-way Patient and Observation connector, and a separate
+read-only FHIR viewer.
 
-## All-in-one:
-### OpenEMR+MySQL Containers with Docker Compose on an Azure IaaS Virtual Machine
+The deployment is deliberately not a production or clinical certification. It
+does not claim HIPAA compliance, high availability, disaster recovery, or
+support for real patient data.
 
-[//]: # (The short URLs below are to show impact of this solution by tracking number of deployments. You can use the direct link if you wish - https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmatthansen0%2Fazure-openemr%2Fmain%2Fall-in-one%2Fazuredeploy.json)
+## Quick start
 
-[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmatthansen0%2Fazure-openemr%2Fmain%2Fall-in-one%2Fazuredeploy.json)
-[![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fmatthansen0%2Fazure-openemr%2Fmain%2Fall-in-one%2Fazuredeploy.json)
-	
+Use the repository dev container. The host machine must have Docker and VS
+Code Dev Containers available; the container supplies Node.js 22, Azure CLI,
+azd, Bicep, Docker Compose, shellcheck, jq, and the validation toolchain.
 
-This template allows you to deploy an Ubuntu Server 22.04-LTS VM with Docker
-and starts an OpenEMR container listening an port 80 which uses MySQL database running
-in a separate but linked Docker container, which are created using Docker Compose. The shell script validates service functionality before finishing; the deployment typically takes about 15 minutes.
-
-This deployment will listen on HTTP/80 and HTTPS/443 (with a self-signed cert) by default and has a public IP resources associated with it, if this is for an internal deployment please [dissociate the public IP address](https://docs.microsoft.com/en-us/azure/virtual-network/remove-public-ip-address-vm) from the VM.
-
-The ***default credentials*** for this deployment are in the [docker-compose.yml file](all-in-one/docker-compose.yml) and by default the login for OpenEMR is ``admin/openEMRonAzure!``. You can change these credentials using the steps below.
-
-``go to administration->Users and you need to provide "Your Password:" - The password of the current user logged in. "User`s New Password:" - The new password to be changed.`` 
-
-You may also want to [change the MySQL Credentials](https://www.mysqltutorial.org/mysql-changing-password.aspx) and update them in OpenEMR ``In order to change the mysql user and password you need to provide the correct credentials in the file sqlconf.php, which can be found under /sites/default/sqlconf.php``.
-
-## Deploying with a Custom Branch
-
-When using the **Deploy to Azure** button, you will be prompted for a `branch` parameter. Enter `main` to deploy the production branch, or `dev` to deploy the development branch. This allows you to deploy from any branch without modifying the code or template files.
-
-If you do not see the prompt for `branch`, ensure that the `branch` parameter is not set in the `azuredeploy.parameters.json` file (this is the default in this repository).
-
-## IaaS Web & PaaS DB:
-### Deployment of OpenEMR Docker Container to an Azure IaaS Virtual Machine + Azure MySQL
-
-This section has yet to be developed, feel free to submit a PR!
-
-
-## ACI + PaaS DB:
-###  Deployment of OpenEMR Docker on ACI + Azure MySQL
-
-This section has yet to be developed, feel free to submit a PR!
-
-## Other Deployment Options
-
-OpenEMR can be deployed directly on a WAMP or LAMP stack in IaaS, on Azure App Services, in ACI, or even AKS. It can use a local DB or one hosted by a VM directly, a container or Azure MySQL. There are many combinations of how to deploy this solution. Please feel free to submit a PR or an issue if you would like to see an alternative deployment method.
-
-## FHIR Connector for Azure Health Data Services:
-### Integration between OpenEMR FHIR API and Azure Health Data Services (AHDS)
-
-The FHIR connector enables synchronization of FHIR R4 resources from OpenEMR to Azure Health Data Services. This POC implementation demonstrates:
-- OAuth2 authentication with OpenEMR FHIR API
-- Azure AD authentication with AHDS
-- Patient and Observation resource synchronization
-- Retry logic for transient failures
-- Comprehensive logging and monitoring
-
-**Key Features:**
-- Azure Function-based connector (serverless, scalable)
-- Secure credential management (supports managed identity and Key Vault)
-- Production-ready ARM templates for deployment
-- Extensible architecture for additional FHIR resources
-
-**Quick Start:**
-
-See the [FHIR Connector README](fhir-connector/README.md) for detailed setup and configuration instructions.
-
-**Deployment:**
-
-Deploy the connector using Azure Resource Manager templates:
-
-```bash
-cd fhir-connector/deployment
-az group create --name openemr-fhir-rg --location eastus
-az deployment group create \
-  --resource-group openemr-fhir-rg \
-  --template-file function-app.json \
-  --parameters function-app.parameters.json
+```powershell
+az login --use-device-code
+azd auth login --use-device-code
+azd init
+azd up
 ```
 
-See [deployment guide](fhir-connector/deployment/README.md) for complete deployment instructions.
+`azd up` is a complete acceptance workflow. It must provision the resources,
+bootstrap OpenEMR, register the connector, deploy both Function apps, prove
+private dependency access, wait for timer-driven Patient and Observation sync,
+and verify the viewer's separate read-only identity. A successful ARM response
+alone is not considered a successful deployment.
 
-## Contributing:
+All Azure data planes are private and default-deny. Storage shared-key access,
+account-key SAS, connection strings, public blobs, and temporary public
+firewall exceptions are not used. Functions use managed identity for Storage,
+Key Vault, and AHDS access.
 
-PRs and issues welcome!
+## Versions
+
+The integrated deployment targets the verified supported production pair:
+
+- OpenEMR `8.3.0`, pinned to an architecture-specific immutable image digest
+  during implementation.
+- MariaDB `11.8.8`, pinned to the upstream digest verified for that release.
+- Azure Functions Flex Consumption `FC1`, Node.js `22`, programming model v4.
+- Azure Health Data Services FHIR R4.
+
+## Inspecting FHIR data
+
+The Azure portal manages AHDS but does not provide a FHIR resource browser. The
+POC includes an Entra-authenticated, read-only browser viewer restricted to
+Patient and Observation resources. It uses a separate managed identity with
+`FHIR Data Reader`; the connector identity is not exposed to the browser.
+
+Authenticated REST/curl and Postman instructions, including the required
+private-network path, will be documented with the deployment runbook. The
+Microsoft Power Query FHIR connector is also suitable for authorized read-only
+inspection.
+
+## Legacy deployment
+
+The [all-in-one](all-in-one/) directory is retained as the original
+OpenEMR-only ARM/Compose path. It uses older images, public assumptions, and
+legacy bootstrap behavior. It is not part of the AHDS POC and is intentionally
+not modified by the new implementation.
+
+## Development and validation
+
+Run the canonical checks from the dev container before deployment:
+
+```bash
+npm --prefix src/fhir-connector run typecheck
+npm --prefix src/fhir-connector test
+npm --prefix src/fhir-viewer run typecheck
+npm --prefix src/fhir-viewer test
+az bicep build --file infra/main.bicep
+scripts/validate.sh
+```
+
+The validator reports `PASS`, `FAIL`, and `SKIP`, checks effective Azure
+settings, and writes redacted deployment diagnostics. Logs must not contain
+FHIR bodies, patient names, dates of birth, identifiers, Observation values,
+credentials, or access tokens.
+
+## Cleanup
+
+```powershell
+azd down --force --purge
+```
+
+The teardown hook removes the environment-scoped viewer app registration and
+then lets azd remove the Azure resource group.
